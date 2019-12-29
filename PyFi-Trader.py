@@ -5,7 +5,11 @@ import datetime as dt
 import os
 import pandas as pd
 import pandas_datareader.data as web
+import matplotlib.pyplot as plt
+from matplotlib import style
+import numpy as np
 
+style.use('ggplot')
 
 def save_sp500_tickers():
     '''
@@ -81,7 +85,38 @@ def collate_data():
     print(main_df.head())
     main_df.to_csv('SP500_formatted.csv')
 
+def visualize_data():
+    """
+    This function visualizes the formatted S&P 500 history
+    :return:
+    """
+    df = pd.read_csv('SP500_formatted.csv')
+
+    # create a correlation dataframe
+    df_corr = df.corr()
+    data = df_corr.values
+
+    # le plot it
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    #define heatmap
+    heatmap = ax.pcolor(data, cmap=plt.cm.RdYlGn)
+    fig.colorbar(heatmap)
+    ax.set_xticks(np.arange(data.shape[0]) + 0.5, minor=False)
+    ax.set_yticks(np.arange(data.shape[1]) + 0.5, minor=False)
+    ax.invert_yaxis()
+    ax.xaxis.tick_top()
+    column_lables = df_corr.columns
+    row_labels = df_corr.index
+    ax.set_xticklabels(column_lables)
+    ax.set_yticklabels(row_labels)
+    plt.xticks(rotation=90)
+    heatmap.set_clim(-1, 1)
+    plt.tight_layout()
+    plt.show()
 
 # We've gotten the data already, we can comment the below out. Uncomment if you want to re-run
 # get_data_from_yahoo(True)
-collate_data()
+# collate_data()
+visualize_data()
