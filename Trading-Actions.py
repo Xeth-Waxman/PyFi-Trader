@@ -25,3 +25,20 @@ def process_labels(ticker, lag_days = 7):
 
     df.fillna(0, inplace=True)
     return tickers, df
+
+def buy_sell_hold(*args, pct_change = 0.02):
+    """
+
+    :param args: The columns we're evaluating for pct change in price
+    :param pct_change: the percentage change of the price of the stock to trigger a buy or sell action. The default
+    is 0.02 (2%)
+    :return: 1 for a buy signal, -1 for a sell signal, and 0 for a hold
+    """
+    cols = [c for c in args]
+    for col in cols:
+        if col > pct_change:
+            return 1
+        if col < -pct_change:
+            return -1
+
+    return 0
