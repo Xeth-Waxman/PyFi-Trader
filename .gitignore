@@ -131,3 +131,4 @@ dmypy.json
 .idea/workspace.xml
 LPL.csv
 sp500_tickers.pickle
+*.csv
