@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pickle
 from collections import Counter
+from sklearn import svm, model_selection, neighbors
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
 
 def process_labels(ticker, lag_days = 7):
     """
@@ -27,7 +29,7 @@ def process_labels(ticker, lag_days = 7):
     df.fillna(0, inplace=True)
     return tickers, df
 
-def buy_sell_hold(*args, pct_change = 0.02):
+def buy_sell_hold(*args, pct_change = 0.035):
     """
 
     :param args: The columns we're evaluating for pct change in price
@@ -68,8 +70,6 @@ def extract_featuresets(ticker):
     df = df.replace([np.inf, -np.inf], np.nan)
     df.dropna(inplace=True)
 
-    print(df.head())
-
     df_vals = df[[ticker for ticker in tickers]].set_index('Date').pct_change()
     df_vals = df_vals.replace([np.inf, -np.inf], 0)
     df_vals.fillna(0, inplace=True)
@@ -79,4 +79,21 @@ def extract_featuresets(ticker):
 
     return X, y, df
 
-extract_featuresets('IBM')
+def do_ml(ticker):
+    X, y, df = extract_featuresets(ticker)
+
+    X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.25)
+
+    clf = VotingClassifier([('lsvc', svm.LinearSVC()),
+                            ('knn', neighbors.KNeighborsClassifier()),
+                            ('rfor', RandomForestClassifier())])
+
+    clf.fit(X_train, y_train)
+    confidence = clf.score(X_test, y_test)
+    print('Accuracy: ', confidence)
+    predictions = clf.predict(X_test)
+    print('Predicted Spread: ', Counter(predictions))
+
+    return confidence
+
+do_ml('AAPL')
